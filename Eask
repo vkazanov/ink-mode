@@ -1,7 +1,7 @@
 ;; -*- mode: eask; lexical-binding: t -*-
 
 (package "ink-mode"
-         "0.3.2"
+         "0.4.0"
          "Major mode for writing interactive fiction in Ink")
 
 (website-url "https://github.com/Kungsgeten/ink-mode")
