@@ -892,17 +892,14 @@ output filter."
 The filter is active only on starting play.  It outputs all
 errors, warnings and infos appearing in LINE, and discards the
 rest."
-  (let ((result ""))
-    (if ink-comint-do-filter
-        (cond ((string-match-p "^\\(ERROR:\\|WARNING:\\|TODO:\\)" line)
-               (setq result (concat line "\n")))
-              ((string-match-p "\\?>" line)
-               (setq result (concat (substring line 3) "\n"))
-               (setq ink-comint-do-filter nil))
-              ((not result)
-               (setq result "")))
-      (setq result (concat line "\n")))
-    result))
+  (if ink-comint-do-filter
+      (cond ((string-match-p "^\\(ERROR:\\|WARNING:\\|TODO:\\)" line)
+             (concat line "\n"))
+            ((string-match "\\`\\?> ?\\(.*\\)\\'" line)
+             (setq ink-comint-do-filter nil)
+             (concat (match-string 1 line) "\n"))
+            (t ""))
+    (concat line "\n")))
 
 (defun ink-comint-filter-output (output)
   "Comint output filter for `ink-play'.
