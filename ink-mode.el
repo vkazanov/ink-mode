@@ -834,6 +834,9 @@ output filter."
          (file-name (if in-ink-play-buffer ink-last-played-file-name
                       (buffer-file-name)))
 
+         ;; Resolve once and reuse.
+         (executable (ink--inklecate-executable))
+
          ;; needs to run before set-buffer call
          (knot-name (when go-to-knot
                       (if in-ink-play-buffer
@@ -841,51 +844,61 @@ output filter."
                           ink-last-played-knot
                         ;; return a knot name if found, nil otherwise
                         (let ((kn (ink-get-knot-name)))
-                          (unless (string-empty-p kn) kn)))))
+                          (unless (string-empty-p kn) kn))))))
 
-         (ink-buffer
-          (if (or
-               ;; our process is already running, so this ink-play
-               ;; should just execute inklecate
-               (comint-check-proc "*Ink*")
-               ;; OR we are already in the *Ink* buffer, but the process
-               ;; has finished, so kick it off again
-               in-ink-play-buffer)
-              (progn
-                (comint-exec "*Ink*" "Ink" (ink--inklecate-executable)
-                             nil `("-p" ,file-name))
-                "*Ink*")
-            ;; no *Ink* buffer yet, need to create it
-            (progn
-              (let ((new-buffer
-                     (make-comint "Ink" (ink--inklecate-executable) nil
-                                  "-p" (buffer-file-name))))
-                (set-buffer new-buffer)
-                (ink-play-mode)
-                new-buffer)))))
+    ;; Source file must be known.
+    (unless file-name
+      (user-error "Buffer is not visiting a file; save it first"))
 
-    ;; update the last ink-file/knot attempted (to support 'replaying')
-    (setq ink-last-played-file-name file-name)
-    ;; conditionally update to preserve knot-name across 'full' replays,
-    ;; which would otherwise clear it
-    (when knot-name
-      (setq ink-last-played-knot knot-name))
+    ;; Compiler must be available.
+    (unless executable
+      (user-error "Cannot find `%s'; set `ink-inklecate-command'"
+                  ink-inklecate-command))
 
-    ;; only switch window if we're not already focused
-    (unless in-ink-play-buffer
-      (switch-to-buffer-other-window ink-buffer))
+    (let ((ink-buffer
+           (if (or
+                ;; our process is already running, so this ink-play
+                ;; should just execute inklecate
+                (comint-check-proc "*Ink*")
+                ;; OR we are already in the *Ink* buffer, but the process
+                ;; has finished, so kick it off again
+                in-ink-play-buffer)
+               (progn
+                 (comint-exec "*Ink*" "Ink" executable
+                              nil `("-p" ,file-name))
+                 "*Ink*")
+             ;; no *Ink* buffer yet, need to create it
+             (let ((new-buffer
+                    (make-comint "Ink" executable nil
+                                 "-p" file-name)))
+               (set-buffer new-buffer)
+               (ink-play-mode)
+               new-buffer))))
 
-    (comint-clear-buffer)
-    (if (and go-to-knot knot-name)
-        (progn
-          (setq ink-comint-do-filter t)
-          (message (concat "Running " knot-name "..."))
-          (comint-send-string (get-process "Ink")
-                              (concat "-> " knot-name "\n"))
-          (comint-delete-output)
-          (comint-clear-buffer))
-      (setq ink-comint-do-filter nil))
-    (message "Running Ink...")))
+      ;; update the last ink-file/knot attempted (to support 'replaying')
+      (setq ink-last-played-file-name file-name)
+      ;; conditionally update to preserve knot-name across 'full' replays,
+      ;; which would otherwise clear it
+      (when knot-name
+        (setq ink-last-played-knot knot-name))
+
+      ;; only switch window if we're not already focused
+      (unless in-ink-play-buffer
+        (switch-to-buffer-other-window ink-buffer))
+
+      (comint-clear-buffer)
+      (if-let* ((go-to-knot)
+                 (knot-name)
+                 (proc (get-process "Ink"))
+                 ((process-live-p proc)))
+          (progn
+            (setq ink-comint-do-filter t)
+            (message "Running %s..." knot-name)
+            (comint-send-string proc (concat "-> " knot-name "\n"))
+            (comint-delete-output)
+            (comint-clear-buffer))
+        (setq ink-comint-do-filter nil))
+      (message "Running Ink..."))))
 
 (defun ink-filter-output-line (line)
   "Filter single line of text from Inklecate's output.
