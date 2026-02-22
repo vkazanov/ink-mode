@@ -1191,11 +1191,9 @@ When `ink-imenu-include-labels' is non-nil, labels can be returned."
   "Return completion table for entity at point.
 Completion is only provided for diverts."
   (when (and (thing-at-point-looking-at ink-regex-divert)
-             (<= (match-beginning 3)
-                 (point)))
-    (when (> (match-beginning 2)
-             (point))
-      (goto-char (match-end 2)))
+             ;; Point must be at or after target text (group 2).
+             ;; This excludes the arrow and intra-divert spacing.
+             (<= (match-beginning 2) (point)))
     (list (match-beginning 2) (match-end 2)
           (completion-table-dynamic
            (lambda (_) (ink-get-headers-and-labels))))))
