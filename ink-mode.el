@@ -1,6 +1,6 @@
 ;;; ink-mode.el --- Major mode for writing interactive fiction in Ink -*- lexical-binding: t -*-
 
-;; Copyright (C) 2016-2020 Erik Sjöstrand, Damien Picard, and
+;; Copyright (C) 2016-2026 Erik Sjöstrand, Damien Picard, and
 ;; ink-mode contributors (see the commit log for details).
 
 ;; Author: Erik Sjöstrand
