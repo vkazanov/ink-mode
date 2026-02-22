@@ -13,8 +13,8 @@ language for writing interactive fiction developed by [[https://www.inklestudios
 - open =INCLUDE= file links with =C-c C-o=
 - command to playtest the game from Emacs: =C-c C-c=
   - start the game at a given knot or stitch with =C-c C-p=
-- outline: fold knots and stitches as in org-mode, with =<TAB>= and
-  =S-<TAB>=
+- outline support for knots and stitches via Emacs outline commands
+- imenu and which-function integration for knots, stitches, and labels
 - error reporting using flymake
 - a collection of YASnippet [[snippets/ink-mode][snippets]] for Ink
 - includes the [[https://github.com/inkle/ink/blob/master/Documentation/WritingWithInk.md][Writing with ink]] language manual, which is displayed
