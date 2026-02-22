@@ -45,7 +45,6 @@
 (require 'subr-x)
 (require 'easymenu)
 (require 'flymake)
-(require 'cl-lib)
 (require 'rx)
 
 (defgroup ink nil
